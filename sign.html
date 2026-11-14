@@ -52,9 +52,9 @@
 <script>
 (function () {
   var EXPECTED = '0xb4e3b8487fc6551a0eef2db3c793f42447240842';
-  var NONCE = 'b9a09667918f403bb416c1eb02cfe9e2';
-  var ISSUED_AT = '2026-11-14T14:22:10.000Z';
-  var EXPIRES_AT_MS = 1794666730027;
+  var NONCE = '37c6394a671c40b7a127a34751c5a480';
+  var ISSUED_AT = '2026-11-14T14:25:37.000Z';
+  var EXPIRES_AT_MS = 1794666937855;
 
   var MESSAGE = 'synmerco.com wants you to sign in with your Ethereum account:\n'
     + EXPECTED + '\n\n'
@@ -80,7 +80,7 @@
 
   messageEl.textContent = MESSAGE;
 
-  if (!NONCE || NONCE === 'b9a09667918f403bb416c1eb02cfe9e2' || !EXPIRES_AT_MS) {
+  if (!NONCE || NONCE.length < 10 || !EXPIRES_AT_MS) {
     messageEl.textContent = 'Halaman belum siap: nonce belum dimasukkan. Minta GOKGOK memperbarui halaman ini.';
     connectBtn.disabled = true;
     signBtn.disabled = true;
@@ -105,7 +105,7 @@
   }
   tick();
 
-  var provider = window.ethereum || null;
+  var provider = window.ethereum || window.BinanceChain || null;
   if (!provider) {
     noprovider.hidden = false;
     flow.hidden = true;
