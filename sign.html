@@ -33,6 +33,8 @@
   <div id="noprovider" class="warn" hidden>
     <b>Tidak ada wallet terdeteksi di browser ini.</b>
     <p>Buka halaman ini di browser dalam aplikasi dompetmu: di aplikasi Binance, buka Web3 Wallet, lalu menu Discover / Browser, dan buka URL halaman ini. Atau buka di browser aplikasi MetaMask.</p>
+    <button id="retryBtn">Coba deteksi ulang</button>
+    <p id="retryStatus" class="muted"></p>
   </div>
 
   <div id="flow">
@@ -52,9 +54,9 @@
 <script>
 (function () {
   var EXPECTED = '0xb4e3b8487fc6551a0eef2db3c793f42447240842';
-  var NONCE = '37c6394a671c40b7a127a34751c5a480';
-  var ISSUED_AT = '2026-11-14T14:25:37.000Z';
-  var EXPIRES_AT_MS = 1794666937855;
+  var NONCE = 'df73cc8a55dc4c52a62fbe577478a2ed';
+  var ISSUED_AT = '2026-11-14T14:28:42.000Z';
+  var EXPIRES_AT_MS = 1794667122754;
 
   var MESSAGE = 'synmerco.com wants you to sign in with your Ethereum account:\n'
     + EXPECTED + '\n\n'
@@ -105,12 +107,34 @@
   }
   tick();
 
-  var provider = window.ethereum || window.BinanceChain || null;
-  if (!provider) {
-    noprovider.hidden = false;
-    flow.hidden = true;
-    return;
+  function findProvider() {
+    return (window.ethereum || window.BinanceChain || null);
   }
+  var provider = findProvider();
+  var detectTries = 0;
+  var detectTimer = null;
+  function showNoProvider() { noprovider.hidden = false; flow.hidden = true; }
+  function showFlow() { noprovider.hidden = true; flow.hidden = false; }
+  function checkProvider() {
+    provider = findProvider();
+    if (provider) { if (detectTimer) clearInterval(detectTimer); showFlow(); return true; }
+    return false;
+  }
+  if (!checkProvider()) {
+    showNoProvider();
+    detectTimer = setInterval(function () {
+      detectTries++;
+      if (checkProvider() || detectTries >= 20) clearInterval(detectTimer);
+    }, 500);
+    window.addEventListener('ethereum#initialized', function () { checkProvider(); }, { once: true });
+  }
+  document.getElementById('retryBtn').addEventListener('click', function () {
+    if (checkProvider()) {
+      document.getElementById('retryStatus').textContent = 'Wallet terdeteksi. Lanjut ke langkah 1 di bawah.';
+    } else {
+      document.getElementById('retryStatus').textContent = 'Masih tidak terdeteksi. Pastikan Web3 Wallet sudah dibuka dan dompet dipilih, lalu tutup halaman ini dan buka lagi dari tab Discover.';
+    }
+  });
 
   var account = null;
 
