@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Synmerco — Link payout wallet untuk agen seizee</title>
+<style>
+  body { font-family: system-ui, -apple-system, sans-serif; background: #0b1220; color: #e6edf3; margin: 0; padding: 20px; }
+  main { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 20px; }
+  h2 { font-size: 16px; margin-top: 28px; }
+  p, li { font-size: 15px; line-height: 1.55; }
+  pre { background: #111a2c; border: 1px solid #22314d; border-radius: 8px; padding: 12px; white-space: pre-wrap; word-break: break-word; font-size: 13px; }
+  button { background: #0ea5a5; color: #04222a; border: 0; border-radius: 8px; padding: 12px 18px; font-size: 16px; font-weight: 700; width: 100%; margin: 8px 0; cursor: pointer; }
+  button:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; }
+  .warn { background: #3a2a00; border: 1px solid #92600a; border-radius: 8px; padding: 12px; }
+  .ok { color: #4ade80; }
+  .err { color: #f87171; }
+  .muted { color: #94a3b8; font-size: 13px; }
+  #sigBox pre { font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Link payout wallet — agen seizee</h1>
+  <p>Halaman ini menautkan dompet <b>0xb4e3b8487fc6551a0eef2db3c793f42447240842</b> sebagai payout wallet agen Synmerco <b>seizee</b>, supaya agen bisa menerima bayaran USDC dan ikut bidding.</p>
+
+  <h2>Apa yang kamu tanda tangani?</h2>
+  <p>Tanda tangan ini <b>hanya membuktikan kamu pemilik dompet itu</b> dan menautkannya ke agen seizee. Ini <b>bukan transaksi</b>: tanpa gas, tanpa dana yang bergerak, tanpa approval token. Signature ini hanya berlaku untuk pesan di bawah ini dan tidak bisa dipakai untuk hal lain.</p>
+  <pre id="message"></pre>
+  <p class="muted">Nonce berlaku sampai <span id="expiry">—</span> (<span id="countdown">—</span>). Kalau kedaluwarsa, minta nonce baru ke GOKGOK.</p>
+
+  <div id="noprovider" class="warn" hidden>
+    <b>Tidak ada wallet terdeteksi di browser ini.</b>
+    <p>Buka halaman ini di browser dalam aplikasi dompetmu: di aplikasi Binance, buka Web3 Wallet, lalu menu Discover / Browser, dan buka URL halaman ini. Atau buka di browser aplikasi MetaMask.</p>
+  </div>
+
+  <div id="flow">
+    <button id="connectBtn">1. Connect Wallet</button>
+    <p id="accountStatus">Belum terhubung.</p>
+    <button id="signBtn" disabled>2. Sign Message</button>
+    <p id="signStatus"></p>
+    <div id="sigBox" hidden>
+      <h2>Signature kamu</h2>
+      <pre id="signature"></pre>
+      <button id="copyBtn">Salin signature</button>
+      <p>Kirim signature ini ke GOKGOK lewat chat (paste). GOKGOK yang akan mengirimkannya ke Synmerco. Jangan kirim seed phrase atau private key ke siapa pun — halaman ini tidak pernah memintanya.</p>
+    </div>
+  </div>
+  <p class="muted">Halaman ini tidak menyimpan apa pun dan tidak mengirim data ke mana pun. Semua terjadi di browser HP kamu.</p>
+</main>
+<script>
+(function () {
+  var EXPECTED = '0xb4e3b8487fc6551a0eef2db3c793f42447240842';
+  var NONCE = 'b9a09667918f403bb416c1eb02cfe9e2';
+  var ISSUED_AT = '2026-11-14T14:22:10.000Z';
+  var EXPIRES_AT_MS = 1794666730027;
+
+  var MESSAGE = 'synmerco.com wants you to sign in with your Ethereum account:\n'
+    + EXPECTED + '\n\n'
+    + 'Link this wallet to Synmerco agent seizee as its payout wallet.\n\n'
+    + 'URI: https://synmerco.com\n'
+    + 'Version: 1\n'
+    + 'Chain ID: 8453\n'
+    + 'Nonce: ' + NONCE + '\n'
+    + 'Issued At: ' + ISSUED_AT;
+
+  var messageEl = document.getElementById('message');
+  var expiryEl = document.getElementById('expiry');
+  var countdownEl = document.getElementById('countdown');
+  var connectBtn = document.getElementById('connectBtn');
+  var signBtn = document.getElementById('signBtn');
+  var accountStatus = document.getElementById('accountStatus');
+  var signStatus = document.getElementById('signStatus');
+  var sigBox = document.getElementById('sigBox');
+  var signatureEl = document.getElementById('signature');
+  var copyBtn = document.getElementById('copyBtn');
+  var noprovider = document.getElementById('noprovider');
+  var flow = document.getElementById('flow');
+
+  messageEl.textContent = MESSAGE;
+
+  if (!NONCE || NONCE === 'b9a09667918f403bb416c1eb02cfe9e2' || !EXPIRES_AT_MS) {
+    messageEl.textContent = 'Halaman belum siap: nonce belum dimasukkan. Minta GOKGOK memperbarui halaman ini.';
+    connectBtn.disabled = true;
+    signBtn.disabled = true;
+  }
+
+  var expiryDate = new Date(EXPIRES_AT_MS);
+  expiryEl.textContent = expiryDate.toLocaleString();
+
+  function tick() {
+    var left = EXPIRES_AT_MS - Date.now();
+    if (left <= 0) {
+      countdownEl.textContent = 'KEDALUWARSA';
+      countdownEl.className = 'err';
+      signBtn.disabled = true;
+      signStatus.textContent = 'Nonce kedaluwarsa. Minta nonce baru ke GOKGOK.';
+      signStatus.className = 'err';
+      return;
+    }
+    var s = Math.floor(left / 1000);
+    countdownEl.textContent = Math.floor(s / 60) + ' menit ' + (s % 60) + ' detik lagi';
+    setTimeout(tick, 1000);
+  }
+  tick();
+
+  var provider = window.ethereum || null;
+  if (!provider) {
+    noprovider.hidden = false;
+    flow.hidden = true;
+    return;
+  }
+
+  var account = null;
+
+  connectBtn.addEventListener('click', async function () {
+    try {
+      accountStatus.textContent = 'Meminta koneksi wallet...';
+      var accounts = await provider.request({ method: 'eth_requestAccounts' });
+      account = accounts && accounts[0];
+      if (!account) { accountStatus.textContent = 'Tidak ada akun yang dipilih.'; return; }
+      if (account.toLowerCase() !== EXPECTED.toLowerCase()) {
+        accountStatus.textContent = 'Terhubung ke ' + account + ' — BUKAN dompet yang diharapkan (' + EXPECTED + '). Ganti akun di walletmu ke dompet itu, lalu tekan Connect lagi.';
+        accountStatus.className = 'err';
+        signBtn.disabled = true;
+        return;
+      }
+      accountStatus.textContent = 'Terhubung: ' + account;
+      accountStatus.className = 'ok';
+      signBtn.disabled = false;
+    } catch (e) {
+      accountStatus.textContent = 'Gagal connect: ' + (e && e.message ? e.message : e);
+      accountStatus.className = 'err';
+    }
+  });
+
+  function hexMessage(str) {
+    var bytes = new TextEncoder().encode(str);
+    var hex = '';
+    for (var i = 0; i < bytes.length; i++) hex += bytes[i].toString(16).padStart(2, '0');
+    return '0x' + hex;
+  }
+
+  signBtn.addEventListener('click', async function () {
+    if (!account) return;
+    signStatus.textContent = 'Meminta tanda tangan di walletmu...';
+    signStatus.className = '';
+    try {
+      var sig = await provider.request({
+        method: 'personal_sign',
+        params: [hexMessage(MESSAGE), account]
+      });
+      signatureEl.textContent = sig;
+      sigBox.hidden = false;
+      signStatus.textContent = 'Berhasil ditandatangani. Salin signature di bawah dan kirim ke GOKGOK.';
+      signStatus.className = 'ok';
+    } catch (e) {
+      var msg = (e && e.message) ? e.message : String(e);
+      if (/hex|0x|invalid/i.test(msg)) {
+        try {
+          var sig2 = await provider.request({ method: 'personal_sign', params: [MESSAGE, account] });
+          signatureEl.textContent = sig2;
+          sigBox.hidden = false;
+          signStatus.textContent = 'Berhasil ditandatangani. Salin signature di bawah dan kirim ke GOKGOK.';
+          signStatus.className = 'ok';
+          return;
+        } catch (e2) { msg = (e2 && e2.message) ? e2.message : String(e2); }
+      }
+      signStatus.textContent = 'Gagal sign: ' + msg;
+      signStatus.className = 'err';
+    }
+  });
+
+  copyBtn.addEventListener('click', async function () {
+    try {
+      await navigator.clipboard.writeText(signatureEl.textContent);
+      copyBtn.textContent = 'Disalin!';
+    } catch (e) {
+      copyBtn.textContent = 'Gagal menyalin — salin manual dari kotak di atas.';
+    }
+  });
+})();
+</script>
+</body>
+</html>
