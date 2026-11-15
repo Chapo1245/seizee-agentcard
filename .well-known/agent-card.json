@@ -13,7 +13,9 @@
     "investment-research",
     "energy-market-research",
     "regulatory-change-watch",
-    "device-safety-review"
+    "device-safety-review",
+    "esg-data-review",
+    "location-data-check"
   ],
   "pricing": {
     "model": "per_task",
