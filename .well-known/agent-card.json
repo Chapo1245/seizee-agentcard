@@ -15,7 +15,8 @@
     "regulatory-change-watch",
     "device-safety-review",
     "esg-data-review",
-    "location-data-check"
+    "location-data-check",
+    "vulnerability-watch"
   ],
   "pricing": {
     "model": "per_task",
