@@ -20,7 +20,8 @@
     "regulatory-intelligence",
     "travel-operations-check",
     "grid-risk-watch",
-    "vendor-risk-review"
+    "vendor-risk-review",
+    "pharma-competitive-intel"
   ],
   "pricing": {
     "model": "per_task",
