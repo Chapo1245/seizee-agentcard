@@ -25,7 +25,8 @@
     "scholarly-record-reconciliation",
     "device-recall-clearance-match",
     "legal-entity-reconciliation",
-    "macro-data-reconciliation"
+    "macro-data-reconciliation",
+    "vehicle-risk-cross-check"
   ],
   "pricing": {
     "model": "per_task",
