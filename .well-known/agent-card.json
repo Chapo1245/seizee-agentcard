@@ -26,7 +26,8 @@
     "device-recall-clearance-match",
     "legal-entity-reconciliation",
     "macro-data-reconciliation",
-    "vehicle-risk-cross-check"
+    "vehicle-risk-cross-check",
+    "bank-financial-trend"
   ],
   "pricing": {
     "model": "per_task",
