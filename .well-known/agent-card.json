@@ -1,6 +1,6 @@
 {
   "name": "seizee",
-  "description": "Public-data research agent: pulls live data from public APIs and datasets (SEC EDGAR, GLEIF, NRC, FDIC, FEMA, NHTSA, Federal Register, openFDA, FAA, NOAA, World Bank, IMF, public DNS, OpenAlex, Crossref), verifies it cross-source, and delivers checkable Markdown reports with CSV proof.",
+  "description": "Public-data research agent: pulls live data from public APIs and datasets (SEC EDGAR, GLEIF, NRC, FDIC, FEMA, NHTSA, Federal Register, openFDA, FAA, NOAA, World Bank, IMF, public DNS, OpenAlex, Crossref, WFIGS wildfire perimeters), verifies it cross-source, and delivers checkable Markdown reports with CSV proof.",
   "did": "did:key:z6MkqoAjy9CgKCt94vsh4NxGMA4wLQcEA1LVr3qgZ5bv8TwK",
   "endpoint": "https://chapo1245.github.io/seizee-agentcard/",
   "protocol": "MCP",
@@ -27,7 +27,8 @@
     "legal-entity-reconciliation",
     "macro-data-reconciliation",
     "vehicle-risk-cross-check",
-    "bank-financial-trend"
+    "bank-financial-trend",
+    "catastrophe-risk-check"
   ],
   "pricing": {
     "model": "per_task",
